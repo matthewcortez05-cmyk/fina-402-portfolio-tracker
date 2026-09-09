@@ -4,8 +4,10 @@ import numpy as np
 import yfinance as yf
 from datetime import date, timedelta
 from flask import Flask, render_template, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__, template_folder='templates')
+CORS(app)
 
 def sync_daily_valuations():
     conn = sqlite3.connect('investments.db')
