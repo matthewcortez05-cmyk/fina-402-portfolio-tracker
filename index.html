@@ -416,7 +416,8 @@
                 rawData = data;
 
                 const dates = [...new Set(data.map(row => row.date))].sort();
-                const tickers = [...new Set(data.map(row => row.ticker))].filter(t => t !== 'CASH');
+                const tickers = [...new Set(data.map(row => row.ticker))]
+                    .filter(t => t && t.trim().toUpperCase() !== 'CASH');
                 allDates = dates;
 
                 const totalDollarValues = dates.map(d => {
