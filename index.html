@@ -366,7 +366,7 @@
         myPieChart.setOption(pieOption);
 
         // Load 5 Syllabus Metrics
-        fetch('/api/metrics')
+        fetch('https://cosmetic-induced-blink-themes.trycloudflare.com/api/metrics')
             .then(res => res.json())
             .then(m => {
                 if (!m) return;
@@ -410,7 +410,7 @@
             .catch(err => console.error("Error loading metrics:", err));
 
         // Load Valuation History and Render
-        fetch('/api/history')
+        fetch('https://cosmetic-induced-blink-themes.trycloudflare.com/api/history')
             .then(response => response.json())
             .then(data => {
                 rawData = data;
