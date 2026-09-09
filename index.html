@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #0f172a;
+            padding: 32px 48px;
+            background-color: #f8fafc;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+        }
+
+        .page-title {
+            font-size: 35px;
+            font-weight: 600;
+            margin-bottom: 3px;
+            letter-spacing: -0.02em;
+        }
+
+        .page-sub {
+            font-size: 22px;
+            font-weight: 300;
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+        }
+
+        .section-label {
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            color: #475569;
+            margin-bottom: 10px;
+        }
+
+        /* Top Account Overview */
+        .account-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        /* 5-Column Syllabus Scorecard */
+        .eval-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            padding: 18px 20px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            background: #ffffff;
+        }
+
+        .kpi-label {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .kpi-value {
+            font-size: 26px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .kpi-subtext {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .pos { color: #16a34a; }
+        .neg { color: #dc2626; }
+
+        /* Chart Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .chart-card {
+            padding: 24px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            background: #ffffff;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+
+        .controls-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 2px;
+            background-color: #f1f5f9;
+            padding: 3px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .tf-btn {
+            background: transparent;
+            border: none;
+            padding: 5px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .tf-btn:hover {
+            color: #0f172a;
+            background: #e2e8f0;
+        }
+
+        .tf-btn.active {
+            background: #0f172a;
+            color: #ffffff;
+        }
+
+        .chart-canvas {
+            width: 100%;
+            height: 480px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="page-title">Portfolio Performance Tracker for Investments (FINA-402)</div>
+        <div class="page-sub">Matthew Cortez, Izzy Zarcone</div>
+
+        <!-- 1. Account Summary -->
+        <div class="account-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Total portfolio value</div>
+                <div class="kpi-value" id="kpi-mkt-value">--</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Dollar gain</div>
+                <div class="kpi-value" id="kpi-dollar-gain">--</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Cash balance</div>
+                <div class="kpi-value" id="kpi-cash">--</div>
+            </div>
+        </div>
+
+        <!-- 2. Course Evaluation Metrics (Benchmark: SPY) -->
+        <div class="section-label">Project evaluation metrics</div>
+        <div class="eval-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Total return</div>
+                <div class="kpi-value" id="kpi-tot-ret">--</div>
+                <div class="kpi-subtext" id="kpi-spy-ret">SPY: --</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Sharpe ratio</div>
+                <div class="kpi-value" id="kpi-sharpe">--</div>
+                <div class="kpi-subtext"></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Alpha (CAPM)</div>
+                <div class="kpi-value" id="kpi-alpha">--</div>
+                <div class="kpi-subtext" id="kpi-beta">Beta: --</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Information ratio</div>
+                <div class="kpi-value" id="kpi-ir">--</div>
+                <div class="kpi-subtext"></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Maximum Drawdown</div>
+                <div class="kpi-value neg" id="kpi-mdd">--</div>
+                
+            </div>
+        </div>
+
+        <!-- 3. Charts -->
+        <div class="charts-grid">
+            <!-- Line Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h2>Performance over time</h2>
+                    <div class="controls-wrapper">
+                        <div class="button-group view-mode-controls">
+                            <button class="tf-btn active" onclick="setViewMode('value', this)">$</button>
+                            <button class="tf-btn" onclick="setViewMode('percent', this)">%</button>
+                        </div>
+                        <div class="button-group timeframe-controls">
+                            <button class="tf-btn" onclick="setTimeframe('1W', this)">1W</button>
+                            <button class="tf-btn" onclick="setTimeframe('2W', this)">2W</button>
+                            <button class="tf-btn" onclick="setTimeframe('1M', this)">1M</button>
+                            <button class="tf-btn" onclick="setTimeframe('2M', this)">2M</button>
+                            <button class="tf-btn active" onclick="setTimeframe('ALL', this)">ALL</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="chart" class="chart-canvas"></div>
+            </div>
+
+            <!-- Allocation Donut Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h2>Current allocation</h2>
+                    <div class="controls-wrapper">
+                        <div class="button-group pie-mode-controls">
+                            <button class="tf-btn active" onclick="setPieMode('asset', this)">Asset</button>
+                            <button class="tf-btn" onclick="setPieMode('sector', this)">Sector</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="pie-chart" class="chart-canvas"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chartDom = document.getElementById('chart');
+        const myChart = echarts.init(chartDom);
+
+        const pieDom = document.getElementById('pie-chart');
+        const myPieChart = echarts.init(pieDom);
+
+        let rawData = [];
+        let allDates = [];
+        let baseSeriesList = [];
+        let currentMode = 'value';
+
+        let assetPieData = [];
+        let sectorPieData = [];
+        let currentPieMode = 'asset';
+        let currentMktVal = 0;
+
+        const currencyFormatter = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        });
+
+        // Initialize Line Chart
+        const lineOption = {
+            tooltip: {
+                trigger: 'axis',
+                valueFormatter: (val) => currencyFormatter.format(val || 0)
+            },
+            legend: { top: 0, left: 'center' },
+            grid: {
+                left: '2%',
+                right: '4%',
+                bottom: '3%',
+                top: 80,
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: [],
+                axisLabel: { hideOverlap: true }
+            },
+            yAxis: {
+                type: 'value',
+                axisLabel: { formatter: (val) => '$' + Number(val).toLocaleString() }
+            },
+            dataZoom: [{ type: 'inside', xAxisIndex: 0, filterMode: 'filter' }],
+            series: []
+        };
+        myChart.setOption(lineOption);
+
+        // Initialize Pie Chart
+        const pieOption = {
+            tooltip: {
+                trigger: 'item',
+                formatter: (params) => {
+                    const formattedVal = Number(params.value).toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                    return `
+                        <strong style="font-size: 14px;">${params.name}</strong><br/>
+                        Market value: <b>$${formattedVal}</b><br/>
+                        Weight: <b>${params.percent}%</b>
+                    `;
+                }
+            },
+            legend: {
+                type: 'plain',
+                orient: 'horizontal',
+                bottom: 10,
+                left: 'center',
+                itemWidth: 10,
+                itemHeight: 10,
+                itemGap: 10,
+                formatter: (name) => {
+                    const activeList = currentPieMode === 'sector' ? sectorPieData : assetPieData;
+                    const item = activeList.find(d => d.name === name);
+                    if (!item || currentMktVal === 0) return name;
+                    const pct = ((item.value / currentMktVal) * 100).toFixed(1);
+                    return `{name|${name}} {weight|${pct}%}`;
+                },
+                textStyle: {
+                    rich: {
+                        name: { fontSize: 11, color: '#334155' },
+                        weight: { fontWeight: 'bold', fontSize: 11, color: '#0f172a' }
+                    }
+                }
+            },
+            series: [{
+                name: 'Allocation',
+                type: 'pie',
+                center: ['50%', '36%'],
+                radius: ['36%', '58%'],
+                avoidLabelOverlap: true,
+                itemStyle: {
+                    borderRadius: 4,
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                },
+                label: { show: false },
+                labelLine: { show: false },
+                emphasis: {
+                    scale: true,
+                    scaleSize: 5,
+                    label: { show: false }
+                },
+                data: []
+            }]
+        };
+        myPieChart.setOption(pieOption);
+
+        // Load 5 Syllabus Metrics
+        fetch('/api/metrics')
+            .then(res => res.json())
+            .then(m => {
+                if (!m) return;
+
+                // Total Return vs SPY
+                const retEl = document.getElementById('kpi-tot-ret');
+                const pRet = m.port_total_return || 0;
+                retEl.textContent = `${pRet >= 0 ? '+' : ''}${pRet.toFixed(2)}%`;
+                retEl.className = 'kpi-value ' + (pRet >= 0 ? 'pos' : 'neg');
+
+                const sRet = m.spy_total_return || 0;
+                document.getElementById('kpi-spy-ret').textContent = `SPY: ${sRet >= 0 ? '+' : ''}${sRet.toFixed(2)}%`;
+
+                // Sharpe Ratio
+                if (m.sharpe !== null && m.sharpe !== undefined) {
+                    const shEl = document.getElementById('kpi-sharpe');
+                    shEl.textContent = m.sharpe.toFixed(2);
+                    shEl.className = 'kpi-value ' + (m.sharpe >= 1.0 ? 'pos' : m.sharpe < 0 ? 'neg' : '');
+                }
+
+                // Alpha & Beta
+                if (m.alpha !== null && m.alpha !== undefined) {
+                    const aEl = document.getElementById('kpi-alpha');
+                    aEl.textContent = `${m.alpha >= 0 ? '+' : ''}${m.alpha.toFixed(2)}%`;
+                    aEl.className = 'kpi-value ' + (m.alpha >= 0 ? 'pos' : 'neg');
+                    document.getElementById('kpi-beta').textContent = `Beta: ${m.beta.toFixed(2)}`;
+                }
+
+                // Information Ratio
+                if (m.information_ratio !== null && m.information_ratio !== undefined) {
+                    const irEl = document.getElementById('kpi-ir');
+                    irEl.textContent = m.information_ratio.toFixed(2);
+                    irEl.className = 'kpi-value ' + (m.information_ratio >= 0 ? 'pos' : 'neg');
+                }
+
+                // Maximum Drawdown
+                if (m.max_drawdown !== null && m.max_drawdown !== undefined) {
+                    document.getElementById('kpi-mdd').textContent = `${m.max_drawdown.toFixed(2)}%`;
+                }
+            })
+            .catch(err => console.error("Error loading metrics:", err));
+
+        // Load Valuation History and Render
+        fetch('/api/history')
+            .then(response => response.json())
+            .then(data => {
+                rawData = data;
+
+                const dates = [...new Set(data.map(row => row.date))].sort();
+                const tickers = [...new Set(data.map(row => row.ticker))];
+                allDates = dates;
+
+                const totalDollarValues = dates.map(d => {
+                    const dayRows = data.filter(r => r.date === d);
+                    return dayRows.reduce((acc, r) => acc + (r.market_value || 0), 0);
+                });
+
+                const totalCostValues = dates.map(d => {
+                    const dayRows = data.filter(r => r.date === d);
+                    return dayRows.reduce((acc, r) => acc + (r.net_invested || 0), 0);
+                });
+
+                const latestMktVal = totalDollarValues[totalDollarValues.length - 1] || 0;
+                const latestCost = totalCostValues[totalCostValues.length - 1] || 0;
+                currentMktVal = latestMktVal;
+
+                const latestDate = dates[dates.length - 1];
+                const latestRows = data.filter(r => r.date === latestDate);
+
+                // Top Account Cards
+                document.getElementById('kpi-mkt-value').textContent = currencyFormatter.format(latestMktVal);
+
+                const curGain = latestMktVal - latestCost;
+                const gainEl = document.getElementById('kpi-dollar-gain');
+                gainEl.className = 'kpi-value ' + (curGain >= 0 ? 'pos' : 'neg');
+                gainEl.textContent = `${curGain >= 0 ? '+' : ''}${currencyFormatter.format(curGain)}`;
+
+                const cashRow = latestRows.find(r => r.ticker === 'CASH');
+                const latestCash = cashRow ? (cashRow.market_value || 0) : 0;
+                document.getElementById('kpi-cash').textContent = currencyFormatter.format(latestCash);
+
+                // Individual Ticker Series
+                const seriesList = tickers.map(ticker => {
+                    const tickerRows = data.filter(row => row.ticker === ticker);
+
+                    const dollarValues = dates.map(d => {
+                        const match = tickerRows.find(r => r.date === d);
+                        return match ? match.market_value : 0;
+                    });
+
+                    const percentValues = dates.map(d => {
+                        const match = tickerRows.find(r => r.date === d);
+                        if (!match || !match.net_invested || match.net_invested === 0) return 0;
+                        return Number((((match.market_value - match.net_invested) / match.net_invested) * 100).toFixed(2));
+                    });
+
+                    return {
+                        name: ticker,
+                        type: 'line',
+                        smooth: false,
+                        data: dollarValues,
+                        dollarData: dollarValues,
+                        percentData: percentValues
+                    };
+                });
+
+                // Total Portfolio Series
+                const totalPercentValues = dates.map((d, idx) => {
+                    const mkt = totalDollarValues[idx];
+                    const cost = totalCostValues[idx];
+                    if (cost === 0) return 0;
+                    return Number((((mkt - cost) / cost) * 100).toFixed(2));
+                });
+
+                const totalSeries = {
+                    name: 'Total Portfolio',
+                    type: 'line',
+                    smooth: false,
+                    data: totalDollarValues,
+                    dollarData: totalDollarValues,
+                    percentData: totalPercentValues,
+                    lineStyle: { width: 3 }
+                };
+
+                seriesList.unshift(totalSeries);
+                baseSeriesList = seriesList;
+
+                myChart.setOption({
+                    legend: { data: ['Total Portfolio', ...tickers] },
+                    xAxis: { data: dates },
+                    series: seriesList
+                });
+
+                // Prepare Allocation Data
+                assetPieData = latestRows.map(row => ({
+                    name: row.ticker,
+                    value: row.market_value
+                })).sort((a, b) => b.value - a.value);
+
+                const sectorTotals = latestRows.reduce((acc, row) => {
+                    const sector = row.sector || 'Other';
+                    acc[sector] = (acc[sector] || 0) + (row.market_value || 0);
+                    return acc;
+                }, {});
+
+                sectorPieData = Object.entries(sectorTotals).map(([sector, totalVal]) => ({
+                    name: sector,
+                    value: Number(totalVal.toFixed(2))
+                })).sort((a, b) => b.value - a.value);
+
+                myPieChart.setOption({
+                    legend: { data: assetPieData.map(d => d.name) },
+                    series: [{ data: assetPieData }]
+                });
+            })
+            .catch(error => console.error("Error loading data:", error));
+
+        function setPieMode(mode, btn) {
+            if (currentPieMode === mode) return;
+            currentPieMode = mode;
+
+            document.querySelectorAll('.pie-mode-controls .tf-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const targetData = mode === 'sector' ? sectorPieData : assetPieData;
+
+            myPieChart.setOption({
+                legend: { data: targetData.map(d => d.name) },
+                series: [{ data: targetData }]
+            });
+        }
+
+        function setTimeframe(range, btn) {
+            document.querySelectorAll('.timeframe-controls .tf-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            if (range === 'ALL' || allDates.length === 0) {
+                myChart.dispatchAction({ type: 'dataZoom', start: 0, end: 100 });
+                return;
+            }
+
+            const [year, month, day] = allDates[allDates.length - 1].split('-').map(Number);
+            const targetDate = new Date(year, month - 1, day);
+
+            if (range === '1W') targetDate.setDate(targetDate.getDate() - 7);
+            if (range === '2W') targetDate.setDate(targetDate.getDate() - 14);
+            if (range === '1M') targetDate.setMonth(targetDate.getMonth() - 1);
+            if (range === '2M') targetDate.setMonth(targetDate.getMonth() - 2);
+
+            const y = targetDate.getFullYear();
+            const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+            const d = String(targetDate.getDate()).padStart(2, '0');
+            const targetStr = `${y}-${m}-${d}`;
+
+            let startIndex = allDates.findIndex(date => date >= targetStr);
+            if (startIndex === -1) startIndex = 0;
+
+            myChart.dispatchAction({
+                type: 'dataZoom',
+                startValue: allDates[startIndex],
+                endValue: allDates[allDates.length - 1]
+            });
+        }
+
+        function setViewMode(mode, btn) {
+            if (currentMode === mode || baseSeriesList.length === 0) return;
+            currentMode = mode;
+
+            document.querySelectorAll('.view-mode-controls .tf-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const updatedSeries = baseSeriesList.map(s => ({
+                ...s,
+                data: mode === 'percent' ? s.percentData : s.dollarData
+            }));
+
+            if (mode === 'percent') {
+                myChart.setOption({
+                    tooltip: {
+                        valueFormatter: (val) => (val != null ? (val >= 0 ? `+${val}%` : `${val}%`) : '-')
+                    },
+                    yAxis: {
+                        axisLabel: { formatter: '{value}%' }
+                    },
+                    series: updatedSeries
+                });
+            } else {
+                myChart.setOption({
+                    tooltip: {
+                        valueFormatter: (val) => currencyFormatter.format(val || 0)
+                    },
+                    yAxis: {
+                        axisLabel: { formatter: (val) => '$' + Number(val).toLocaleString() }
+                    },
+                    series: updatedSeries
+                });
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            myChart.resize();
+            myPieChart.resize();
+        });
+    </script>
+</body>
+
+</html>
