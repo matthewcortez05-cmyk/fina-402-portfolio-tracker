@@ -255,6 +255,8 @@
     </div>
 
     <script>
+        const API_BASE_URL = 'https://eugene-loaded-bargain-managing.trycloudflare.com';
+        
         const chartDom = document.getElementById('chart');
         const myChart = echarts.init(chartDom);
 
@@ -367,7 +369,7 @@
         myPieChart.setOption(pieOption);
 
         // Load 5 Syllabus Metrics
-        fetch('https://eugene-loaded-bargain-managing.trycloudflare.com/api/metrics')
+        fetch(`${API_BASE_URL}/api/metrics`)
             .then(res => res.json())
             .then(m => {
                 if (!m) return;
@@ -411,7 +413,7 @@
             .catch(err => console.error("Error loading metrics:", err));
 
         // Load Valuation History and Render
-        fetch('https://eugene-loaded-bargain-managing.trycloudflare.com/api/history')
+        fetch(`${API_BASE_URL}/api/history`)
             .then(response => response.json())
             .then(data => {
                 rawData = data;
