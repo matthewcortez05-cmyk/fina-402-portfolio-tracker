@@ -255,7 +255,9 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'https://eugene-loaded-bargain-managing.trycloudflare.com';
+        const defaultUrl = 'https://eugene-loaded-bargain-managing.trycloudflare.com';
+        const urlParam = new URLSearchParams(window.location.search).get('api');
+        const API_BASE_URL = urlParam || defaultUrl;
         
         const chartDom = document.getElementById('chart');
         const myChart = echarts.init(chartDom);
